@@ -22,6 +22,9 @@
 #include "at_tcp.h"
 #include "web.h"
 
+#ifndef _MSC_VER
+#include <unistd.h>
+#endif
 #include <cstdlib>
 #include <cstdio>
 #include <string>
@@ -99,10 +102,26 @@ int main(int argc, char **argv)
 
     try
     {
-        cfg->parse("huawei_band_tool_config.txt");
+        // two different files.
+#ifndef _MSC_VER
+        if ( access( "huawei_band_tool_config.conf", 0 ) == 0 )
+#else
+        if ( _access( "huawei_band_tool_config.conf", 0 ) == 0 )
+#endif
+        {
+            cfg->parse("huawei_band_tool_config.conf");
+        }
+        else
+#ifndef _MSC_VER
+        if ( access( "huawei_band_tool_config.txt", 0 ) == 0 )
+#else
+        if ( _access( "huawei_band_tool_config.txt", 0 ) == 0 )
+#endif
+        {
+            cfg->parse("huawei_band_tool_config.txt");
+        }
 
         // Web
-
         copystr(web::routerIP, cfg->lookupString("", "web_router_ip"));
         copystr(web::routerUser, cfg->lookupString("", "web_router_user"));
         copystr(web::routerPass, cfg->lookupString("", "web_router_pass"));

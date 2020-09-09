@@ -1,29 +1,49 @@
 ## Huawei Tool ##
 
+* A forked repository to supporting MinGW-W64 and Linux better.
+
 ### Description: ###
 
-German: https://www.lteforum.at/mobilfunk/huawei-band-tool.7970
+* (German) https://www.lteforum.at/mobilfunk/huawei-band-tool.7970
 
 ### Releases: ###
 
-https://drive.google.com/open?id=0B2hB5md6Sd_vVWlHekl2MDI4NkE
+* https://drive.google.com/open?id=0B2hB5md6Sd_vVWlHekl2MDI4NkE
 
 ### Supported Devices: ###
 
 * B618s-22d
-* e3372 (HiLink)
-* And others.
+* e3372, e5573 (HiLink)
+* And others supporting WebUI.
 
-### Supported OSs: ###
+### Supported platforms
 
-Linux, Darwin and Windows
+* Linux
+* MacOSX
+* Windows (MinGW-W64)
 
-### Dependencies: ###
+### Dependencies:
 
-Compiler: `g++ >= 4.7` or `clang++`  
-Libs: `curl`, `rapidxml`, `crypto++`, `config4cpp` and `sdl2_net`
+* compiler: g++ higher then 4.7, or clang++
+* external libraries : 
+    - curl
+    - rapidxml (included)
+    - crypto++
+    - config4cpp (included)
+    - sdl2_net
 
-### Building: ###
+### Tip: MinGW-W64 required packages with MSYS2
 
-    cd src
-    make install
+* rapidxml : included in src directory.
+* crypto++ : pacman -S mingw-w64-x86_64-crypto++
+* config4cpp : included in src directory.
+
+### Building:
+```
+$ cd src
+$ cd config4cpp
+$ make
+$ cd ..
+$ make 
+$ make install
+```

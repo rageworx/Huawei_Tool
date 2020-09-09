@@ -6,19 +6,27 @@ OPTIMIZE ?= 3
 LTO ?= 0
 STD ?= c++0x
 
+OUTBIN=huawei_band_tool
+OUTDIR=bin/
+OBJDIR=obj/
+SRCDIR=src/
+INSTALLDIR=/usr/local/bin
+
 override COMPILER= $(shell echo $(CXX) | awk -F- '{print $NF}')
 override CPP= $(shell echo $(CXX) | sed 's/$(COMPILER)/cpp)/')
 
 override PLATFORM:= $(shell echo $(PLATFORM) | tr '[:upper:]' '[:lower:]')
-override FLAGS+= -std=$(STD) -O$(OPTIMIZE) -I. -Wall -Wextra -Werror=format
-override LDFLAGS+= -pthread
+override CFLAGS  += -std=$(STD) -O$(OPTIMIZE) -Wno-deprecated
+override CFLAGS  += -Isrc -Irapidxml -Iconfig4cpp/include
+override CFLAGS  += -Wall -Wextra -Werror=format
+override LFLAGS  += -Lconfig4cpp/lib -pthread
 
 ifeq (1, $(DEBUG))
-    override FLAGS+= -g3
+    override CFLAGS+= -DDEBUG -g3
 endif
 
 #ifneq (1, $(RELEASE))
-    override FLAGS+= -DWORK_IN_PROGRESS
+    override CFLAGS+= -DWORK_IN_PROGRESS
 #endif
 
 ifeq (, $(findstring clang, $(CXX)))
@@ -28,32 +36,32 @@ else
 endif
 
 ifeq (1, $(LTO))
-    override FLAGS+= $(LTOFLAG)
+    override CFLAGS+= $(LTOFLAG)
 endif
 
 ifneq (, $(LIBS))
     ifeq (, $(findstring darwin, $(PLATFORM)))
         ifneq (1, $(DEBUG))
-            override LDFLAGS+= -Wl,-s
+            override LFLAGS+= -Wl,-s
         endif
         ifeq (0, $(NO_STATIC_C_LIB))
-            override LDFLAGS+= -static
+            override LFLAGS+= -static
         endif
-        override LDFLAGS+= -static-libgcc -static-libstdc++
-        override LDFLAGS+= -Wl,--gc-sections
-       # override LDFLAGS+= -Wl,--as-needed
+        override LFLAGS+= -static-libgcc -static-libstdc++
+        override LFLAGS+= -Wl,--gc-sections
+       # override LFLAGS+= -Wl,--as-needed
     else
-        override LDFLAGS+= -Wl,-dead_strip
+        override LFLAGS+= -Wl,-dead_strip
     endif
 endif
 
 ifneq (, $(LIBS))
-    override FLAGS+= -isystem $(LIBS)/include
-    override LDFLAGS+= -L $(LIBS)/lib
+    override CFLAGS+= -isystem $(LIBS)/include
+    override LFLAGS+= -L $(LIBS)/lib
 endif
 
 ifneq (, $(findstring darwin, $(PLATFORM)))
-    override FLAGS+= -DUSE_GETTIMEOFDAY
+    override CFLAGS+= -DUSE_GETTIMEOFDAY
 endif
 
 ifneq (, $(findstring linux, $(PLATFORM)))
@@ -61,42 +69,54 @@ ifneq (, $(findstring linux, $(PLATFORM)))
 endif
 
 ifneq (, $(findstring android, $(PLATFORM)))
-    override FLAGS+=-fPIE
-    override LDFLAGS+=-pie
+    override CFLAGS+=-fPIE
+    override LFLAGS+=-pie
     override EXTRA_LIBS+=-ldl -llog
 endif
 
 ifneq (, $(findstring mingw, $(PLATFORM)))
-    override FLAGS+= -DCURL_STATICLIB -D__USE_MINGW_ANSI_STDIO
+    override CFLAGS+= -DCURL_STATICLIB -D__USE_MINGW_ANSI_STDIO
     override EXTRA_LIBS+= -lws2_32 -liphlpapi -lshlwapi
     override EXE_SUFFIX= .exe
 endif
 
-BIN=huawei_band_tool$(EXE_SUFFIX)
+################################################################################
 
-SRCS=at_tcp.cpp huawei_tools.cpp main.cpp tools.cpp web.cpp cli_tools.cpp
+TARGETBIN = $(OUTDIR)$(OUTBIN)$(EXE_SUFFIX)
+
+SRCS += $(SRCDIR)at_tcp.cpp 
+SRCS += $(SRCDIR)huawei_tools.cpp 
+SRCS += $(SRCDIR)tools.cpp 
+SRCS += $(SRCDIR)web.cpp 
+SRCS += $(SRCDIR)cli_tools.cpp
+SRCS += $(SRCDIR)main.cpp 
 
 OBJS=$(subst .cpp,.o,$(SRCS))
 OBJS:=$(subst .c,.o,$(OBJS))
 
-override LDFLAGS+= -lcryptopp -lconfig4cpp -lcurl -lz -lSDL2_net -lSDL2 $(EXTRA_LIBS)
+override LFLAGS+= -lcryptopp -lconfig4cpp -lcurl -lz -lSDL2_net -lSDL2
+override LFLAGS+= $(EXTRA_LIBS)
 
-all: project
+.PHONY: clean prepare
+
+all: prepare $(TARGETBIN)
+
+prepare:
+	@mkdir -p $(OUTDIR)
+	@mkdir -p $(OBJDIR)
 
 %.o: %.cpp
-	$(CXX) $(FLAGS) -c -o $@ $<
+	@$(CXX) $(CFLAGS) -c -o $@ $<
 
 %.o: %.c
-	$(CC) $(FLAGS) -c -o $@ $<
+	@$(CC) $(CFLAGS) -c -o $@ $<
 
-project: $(OBJS)
-	$(CXX) $(FLAGS) -o $(BIN) $(OBJS) $(LDFLAGS)
+$(TARGETBIN): $(OBJS)
+	@$(CXX) $(CFLAGS) $(OBJS) $(LFLAGS) -o $@
 
-install: project
-	cp -f $(BIN) ..
-
-.PHONY: clean
+install: $(TARGETBIN)
+	@cp -f $(BIN) $(INSTALLDIR)
 
 clean:
-	rm -f $(BIN){,.exe} $(OBJS)
-
+	@rm -f $(OBJDIR)*.obj/
+	@rm -f $(TARGETBIN)

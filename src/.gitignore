@@ -3,3 +3,5 @@ bin/
 *.o
 *.a
 *.exe
+debug.log
+huawei_band_tool_config.conf

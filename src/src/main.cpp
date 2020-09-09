@@ -206,8 +206,10 @@ int main(int argc, char **argv)
              " --reboot\n"
              " --windows-exit-instantly\n"
              "\nVersion: " VERSION " \"" CODENAME "\" (Built on: " __DATE__ " " __TIME__ ")\n"
-             "GitHub: https://github.com/0xAA/Huawei_Tool\n\n"
-             "Copyright: unknown @ lteforum.at | unknown.lteforum@gmail.com\n\n", argv[0]);
+             "GitHub.0: https://github.com/0xAA/Huawei_Tool\n"
+             "GitHub.1: https://github.com/rageworx/Huawei_Tool\n\n"
+             "Copyright.0: unknown @ lteforum.at <unknown.lteforum@gmail.com>\n\n"
+             ,argv[0]);
         windows::wait();
         exit(1);
     };

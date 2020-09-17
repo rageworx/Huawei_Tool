@@ -84,7 +84,7 @@ ifneq (, $(findstring android, $(PLATFORM)))
 endif
 
 ifneq (, $(findstring mingw, $(PLATFORM)))
-	override CFLAGS+= -DCURL_STATICLIB
+	override CFLAGS+= -mconsole -DCURL_STATICLIB
 	override CFLAGS+= -I$(DIRDEST)/$(DIROPENSSL)/include
 	override CFLAGS+= -I$(DIRDEST)/$(DIRBROTLI)/include
 	override CFLAGS+= -I$(DIRDEST)/$(DIRSSH2)/include

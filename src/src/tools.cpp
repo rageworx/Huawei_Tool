@@ -34,6 +34,13 @@
 #include <unistd.h>
 #endif
 
+#if defined(CRYPTOPP_NO_GLOBAL_BYTE)
+    using CryptoPP::byte;
+    #define P_BYTE  CryptoPP::byte
+#else
+    #define P_BYTE  unsigned char
+#endif
+
 // String
 
 bool vformat(char *text, size_t size, const char *fmt, va_list args, size_t *length)
@@ -240,8 +247,8 @@ std::string &sha256(const std::string &msg, std::string &result)
     result.clear();
 
     CryptoPP::SHA256 hash;
-    CryptoPP::byte digest[CryptoPP::SHA256::DIGESTSIZE];
-    hash.CalculateDigest(digest, (CryptoPP::byte*)msg.c_str(), msg.length());
+    P_BYTE digest[CryptoPP::SHA256::DIGESTSIZE];
+    hash.CalculateDigest(digest, (P_BYTE*)msg.c_str(), msg.length());
 
     CryptoPP::HexEncoder encoder;
     encoder.Attach(new CryptoPP::StringSink(result));

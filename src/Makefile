@@ -12,19 +12,23 @@ OBJDIR=obj/
 SRCDIR=src/
 INSTALLDIR=/usr/local/bin
 
+include download.conf
+
 override COMPILER= $(shell echo $(CXX) | awk -F- '{print $NF}')
 override CPP= $(shell echo $(CXX) | sed 's/$(COMPILER)/cpp)/')
 
 override PLATFORM:= $(shell echo $(PLATFORM) | tr '[:upper:]' '[:lower:]')
-override CFLAGS  += -std=$(STD) -O$(OPTIMIZE) -Wno-deprecated -Wcpp
+override CFLAGS   = -std=$(STD) -O$(OPTIMIZE) -Wno-deprecated
 override CFLAGS  += -Isrc -Irapidxml -Iconfig4cpp/include
 override CFLAGS  += -Wall -Wextra -Werror=format
-override LFLAGS  += -Lconfig4cpp/lib
+override USR_LFLAGS += -Lconfig4cpp/lib
+
+ELIBS = -lcryptopp -lconfig4cpp -lSDL2_net -lSDL2
 
 ifeq (1, $(DEBUG))
     override CFLAGS+= -DDEBUG -g3
 else
-	override LFLAGS+= -O2
+	override OPT_FLAGS+= -O2
 endif
 
 #ifneq (1, $(RELEASE))
@@ -44,13 +48,13 @@ endif
 ifneq (, $(LIBS))
     ifeq (, $(findstring darwin, $(PLATFORM)))
         ifneq (1, $(DEBUG))
-            override LFLAGS+= -Wl,-s
+            override PRE_LFLAGS+= -Wl,-s
         endif
         ifeq (0, $(NO_STATIC_C_LIB))
-            override LFLAGS+= -static
+            override PRE_LFLAGS+= -static
         endif
-        override LFLAGS+= -static-libgcc -static-libstdc++
-        override LFLAGS+= -Wl,--gc-sections
+        override USR_LFLAGS+= -static-libgcc -static-libstdc++
+        override USR_LFLAGS+= -Wl,--gc-sections
        # override LFLAGS+= -Wl,--as-needed
     else
         override LFLAGS+= -Wl,-dead_strip
@@ -59,27 +63,52 @@ endif
 
 ifneq (, $(LIBS))
     override CFLAGS+= -isystem $(LIBS)/include
-    override LFLAGS+= -L $(LIBS)/lib
+    override PRE_LFLAGS+= -L $(LIBS)/lib
 endif
 
 ifneq (, $(findstring darwin, $(PLATFORM)))
     override CFLAGS+= -DUSE_GETTIMEOFDAY
+	override USR_LFLAGS+= -lcurl -lz
 endif
 
 ifneq (, $(findstring linux, $(PLATFORM)))
     override EXTRA_LIBS+= -lrt
+	override USR_LFLAGS+= -lcurl -lz
 endif
 
 ifneq (, $(findstring android, $(PLATFORM)))
     override CFLAGS+=-fPIE
-    override LFLAGS+=-pie
+    override USR_LFLAGS+=-pie
+	override USR_LFLAGS+=-lcurl -lz
     override EXTRA_LIBS+=-ldl -llog
 endif
 
 ifneq (, $(findstring mingw, $(PLATFORM)))
-	#override CFLAGS+= -DCURL_STATICLIB -D__USE_MINGW_ANSI_STDIO
-	#override LFLAGS+= -static-libgcc -static-libstdc++
-	override EXTRA_LIBS+= -lpthread
+	override CFLAGS+= -DCURL_STATICLIB
+	override CFLAGS+= -I$(DIRDEST)/$(DIROPENSSL)/include
+	override CFLAGS+= -I$(DIRDEST)/$(DIRBROTLI)/include
+	override CFLAGS+= -I$(DIRDEST)/$(DIRSSH2)/include
+	override CFLAGS+= -I$(DIRDEST)/$(DIRNGHTTP2)/include
+	override CFLAGS+= -I$(DIRDEST)/$(DIRCURL)/include
+	override PRE_LFLAGS+= -L$(DIRDEST)/$(DIROPENSSL)/lib
+	override PRE_LFLAGS+= -L$(DIRDEST)/$(DIRBROTLI)/lib
+	override PRE_LFLAGS+= -L$(DIRDEST)/$(DIRSSH2)/lib
+	override PRE_LFLAGS+= -L$(DIRDEST)/$(DIRNGHTTP2)/lib
+	override PRE_LFLAGS+= -L$(DIRDEST)/$(DIRCURL)/lib
+
+	# local libraries ..
+	override PRE_LFLAGS+= -mwindows -static -lmingw32 -lSDL2main
+	override USR_LFLAGS+= -lcurl -lssh2 -lssl -lnghttp2
+	override USR_LFLAGS+= -lbrotlidec-static -lbrotlicommon-static
+
+	# about windows ....
+	override EXTRA_LIBS+= -ldxerr8 -ldinput8 
+	override EXTRA_LIBS+= -lshell32 -lsetupapi -ladvapi32 -luuid -lversion
+	override EXTRA_LIBS+= -loleaut32 -lole32 -limm32
+	override EXTRA_LIBS+= -lcrypto -lcrypt32 -lwldap32 
+	override EXTRA_LIBS+= -lm -lgdi32 -lwinmm -luser32 -liphlpapi
+	override EXTRA_LIBS+= -lz -lzstd -lws2_32 -lpthread
+
     override EXE_SUFFIX= .exe
 endif
 
@@ -96,9 +125,10 @@ SRCS += $(SRCDIR)main.cpp
 
 OBJS=$(SRCS:$(SRCDIR)%.cpp=$(OBJDIR)%.o)
 
-override LFLAGS+= $(PRE_LFLAGS)
-override LFLAGS+= -lcryptopp -lconfig4cpp -lcurl -lz -lSDL2_net -lSDL2
-override LFLAGS+= $(EXTRA_LIBS)
+LFLAGS+= $(PRE_LFLAGS)
+LFLAGS+= $(ELIBS)
+LFLAGS+= $(USR_LFLAGS)
+LFLAGS+= $(EXTRA_LIBS)
 
 .PHONY: clean prepare release
 
@@ -115,7 +145,7 @@ $(OBJS): $(OBJDIR)%.o: $(SRCDIR)%.cpp
 
 $(TARGETBIN): $(OBJS)
 	@echo "Linking $@ ..."
-	@$(CXX) $(CFLAGS) $(OBJS) $(LFLAGS) -o $@
+	@$(CXX) $(CFLAGS) $(OBJS) $(LFLAGS) $(OPT_FLAGS) -o $@
 
 install: $(TARGETBIN)
 	@echo "Installing $< ..."

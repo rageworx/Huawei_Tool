@@ -747,7 +747,9 @@ void deinit()
 
 } // namespace cli
 
+#ifdef DEBUG
 #warning center option windows
 #warning win64 crash
 #warning mac test
 #warning fixed console size vars
+#endif

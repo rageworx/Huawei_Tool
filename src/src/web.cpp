@@ -1159,7 +1159,9 @@ bool showSignalStrength()
 
     auto printSignalStats = [&]()
     {
-    #warning conf (parameter too)
+#ifdef DEBUG        
+        #warning conf (parameter too)
+#endif
         std::vector<status::Column> columns;
 
         columns.push_back({"Current", formatSignalStats(SignalValue<>::GET_CURRENT)});
@@ -1230,9 +1232,10 @@ bool showSignalStrength()
 
         httpResult.reset();
         httpOpts.reset();
-#warning lower
+#ifdef DEBUG
+        #warning lower
         // /api/net/current-plmn
-
+#endif
         response = web::xmlHttpRequest(
             "Getting PLMN",
             "/api/net/current-plmn",

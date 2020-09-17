@@ -72,7 +72,9 @@ void printWarnings()
     {
         warn.linef("Received no ^CERSSI within %llu seconds",
                    getTimeDiffInSeconds(TP(now, 0), TP(lastCERSSI, connectMillis)));
+#ifdef DEBUG
 #warning cerssi.reset();
+#endif
         lastCERSSIWarning = now;
     }
 }

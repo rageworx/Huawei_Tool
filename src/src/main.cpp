@@ -288,7 +288,9 @@ int main(int argc, char **argv)
         } while (!checkExit());
 
         connected:;
+#ifdef DEBUG
         #warning reconnect
+#endif
         dbg.linef("Connected successfully");
     }
     else

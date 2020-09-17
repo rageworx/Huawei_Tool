@@ -164,7 +164,9 @@ struct SignalValue
         return TT();
     }
 
+#ifdef DEBUG
 #warning min max range ignore
+#endif
     template<typename TT>
     void update(const TT val_)
     {
@@ -285,7 +287,9 @@ struct ConnStatus
 
 struct Signal
 {
+#ifdef DEBUG
     #warning WEB
+#endif
     SignalValue<> RSCP;
     SignalValue<> ECIO;
     SignalValue<> RSRP;

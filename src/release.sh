@@ -6,7 +6,7 @@ pushd "${0%/*}" &>/dev/null
 #ln -sf $PWD/../libs ..
 
 TOOLNAME="huawei_band_tool"
-RELEASEDIR="../release"
+RELEASEDIR="../pub"
 
 if [ $(hostname) == "thomas-pc" ]; then
   llvm apple

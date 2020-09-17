@@ -332,7 +332,7 @@ void setConsoleTitle(char **argv)
         title += "]";
     }
     char tmp[256] = "";
-    wnsprintf(tmp, sizeof(tmp), _MT(title.c_str()));
+    snprintf(tmp, sizeof(tmp), _MT(title.c_str()));
     tmp[sizeof(tmp)-1] = '\0';
     SetConsoleTitle((LPCTSTR)tmp);
 }

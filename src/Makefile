@@ -16,13 +16,15 @@ override COMPILER= $(shell echo $(CXX) | awk -F- '{print $NF}')
 override CPP= $(shell echo $(CXX) | sed 's/$(COMPILER)/cpp)/')
 
 override PLATFORM:= $(shell echo $(PLATFORM) | tr '[:upper:]' '[:lower:]')
-override CFLAGS  += -std=$(STD) -O$(OPTIMIZE) -Wno-deprecated
+override CFLAGS  += -std=$(STD) -O$(OPTIMIZE) -Wno-deprecated -Wcpp
 override CFLAGS  += -Isrc -Irapidxml -Iconfig4cpp/include
 override CFLAGS  += -Wall -Wextra -Werror=format
-override LFLAGS  += -Lconfig4cpp/lib -pthread
+override LFLAGS  += -Lconfig4cpp/lib
 
 ifeq (1, $(DEBUG))
     override CFLAGS+= -DDEBUG -g3
+else
+	override LFLAGS+= -O2
 endif
 
 #ifneq (1, $(RELEASE))
@@ -75,8 +77,9 @@ ifneq (, $(findstring android, $(PLATFORM)))
 endif
 
 ifneq (, $(findstring mingw, $(PLATFORM)))
-    override CFLAGS+= -DCURL_STATICLIB -D__USE_MINGW_ANSI_STDIO
-    override EXTRA_LIBS+= -lws2_32 -liphlpapi -lshlwapi
+	#override CFLAGS+= -DCURL_STATICLIB -D__USE_MINGW_ANSI_STDIO
+	#override LFLAGS+= -static-libgcc -static-libstdc++
+	override EXTRA_LIBS+= -lpthread
     override EXE_SUFFIX= .exe
 endif
 
@@ -91,32 +94,38 @@ SRCS += $(SRCDIR)web.cpp
 SRCS += $(SRCDIR)cli_tools.cpp
 SRCS += $(SRCDIR)main.cpp 
 
-OBJS=$(subst .cpp,.o,$(SRCS))
-OBJS:=$(subst .c,.o,$(OBJS))
+OBJS=$(SRCS:$(SRCDIR)%.cpp=$(OBJDIR)%.o)
 
+override LFLAGS+= $(PRE_LFLAGS)
 override LFLAGS+= -lcryptopp -lconfig4cpp -lcurl -lz -lSDL2_net -lSDL2
 override LFLAGS+= $(EXTRA_LIBS)
 
-.PHONY: clean prepare
+.PHONY: clean prepare release
 
 all: prepare $(TARGETBIN)
 
 prepare:
+	@echo "Preparing target platform: $(PLATFORM)"
 	@mkdir -p $(OUTDIR)
 	@mkdir -p $(OBJDIR)
 
-%.o: %.cpp
+$(OBJS): $(OBJDIR)%.o: $(SRCDIR)%.cpp
+	@echo "Compiling $< ..."
 	@$(CXX) $(CFLAGS) -c -o $@ $<
 
-%.o: %.c
-	@$(CC) $(CFLAGS) -c -o $@ $<
-
 $(TARGETBIN): $(OBJS)
+	@echo "Linking $@ ..."
 	@$(CXX) $(CFLAGS) $(OBJS) $(LFLAGS) -o $@
 
 install: $(TARGETBIN)
-	@cp -f $(BIN) $(INSTALLDIR)
+	@echo "Installing $< ..."
+	@cp -f $(TARGETBIN) $(INSTALLDIR)
+
+release: $(TARGETBIN)
+	@echo "Publishing $< ..."
+	@cp -f $(TARGETBIN) ../pub
 
 clean:
-	@rm -f $(OBJDIR)*.obj/
+	@echo "Cleaning ..."
+	@rm -f $(OBJDIR)*.o
 	@rm -f $(TARGETBIN)

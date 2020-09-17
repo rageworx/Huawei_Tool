@@ -120,7 +120,7 @@ build win32 Windows/32bit
 build win64 Windows/64bit
 
 unix2dos ${RELEASEDIR}/*.txt
-version=$(cat version.h | grep "define VERSION" | xargs | awk '{print $3}')
+version=$(cat res/resource.h | grep "define APP_VERSION_STR" | xargs | awk '{print $3}')
 
 pushd ${RELEASEDIR} &>/dev/null
 zip -q -9 -r - * > ../${TOOLNAME}_v${version}.zip

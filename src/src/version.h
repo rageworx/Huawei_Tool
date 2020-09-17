@@ -15,7 +15,12 @@
  *  You should have received a copy of the GNU General Public License      *
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  **************************************************************************/
+#ifndef __VERSION_H__
+#define __VERSION_H__
 
+#include "resource.h"
 #define TOOLNAME "Huawei Band Tool"
 #define CODENAME "M-I-A-CAT"
-#define VERSION "0.2.7.1.a"
+#define VERSION APP_VERSION_STR
+
+#endif /// of __VERSION_H__

@@ -30,6 +30,10 @@
 #include <string>
 #include <config4cpp/Configuration.h>
 
+#define FILE_DEBUG_LOG      "debug.log"
+#define FILE_DEFAULT_CONF   "huawei_band_tool_config.conf"
+#define FILE_SUB_CONF       "huawei_band_tool_config.txt"
+
 namespace cli {
 
 void NORETURN exit_success(bool printSuccess, bool breakBeforePrintingSuccess)
@@ -104,21 +108,21 @@ int main(int argc, char **argv)
     {
         // two different files.
 #ifndef _MSC_VER
-        if ( access( "huawei_band_tool_config.conf", 0 ) == 0 )
+        if ( access( FILE_DEFAULT_CONF, 0 ) == 0 )
 #else
-        if ( _access( "huawei_band_tool_config.conf", 0 ) == 0 )
+        if ( _access( FILE_DEFAULT_CONF, 0 ) == 0 )
 #endif
         {
-            cfg->parse("huawei_band_tool_config.conf");
+            cfg->parse( FILE_DEFAULT_CONF );
         }
         else
 #ifndef _MSC_VER
-        if ( access( "huawei_band_tool_config.txt", 0 ) == 0 )
+        if ( access( FILE_SUB_CONF, 0 ) == 0 )
 #else
-        if ( _access( "huawei_band_tool_config.txt", 0 ) == 0 )
+        if ( _access( FILE_SUB_CONF, 0 ) == 0 )
 #endif
         {
-            cfg->parse("huawei_band_tool_config.txt");
+            cfg->parse( FILE_SUB_CONF );
         }
 
         // Web
@@ -428,7 +432,7 @@ int main(int argc, char **argv)
     cli::init();
     atexit(cli::deinit);
 
-    FILE *dbgLogFile = fopen("debug.log", "w");
+    FILE *dbgLogFile = fopen( FILE_DEBUG_LOG, "w" );
     if (dbgLogFile) dbg.assignStream(dbgLogFile);
     else err.linef("Failed to open debug logfile");
 

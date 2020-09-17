@@ -19,7 +19,7 @@ override CPP= $(shell echo $(CXX) | sed 's/$(COMPILER)/cpp)/')
 
 override PLATFORM:= $(shell echo $(PLATFORM) | tr '[:upper:]' '[:lower:]')
 override CFLAGS   = -std=$(STD) -O$(OPTIMIZE) -Wno-deprecated
-override CFLAGS  += -Isrc -Irapidxml -Iconfig4cpp/include
+override CFLAGS  += -Ires -Isrc -Irapidxml -Iconfig4cpp/include
 override CFLAGS  += -Wall -Wextra -Werror=format
 override USR_LFLAGS += -Lconfig4cpp/lib
 
@@ -28,7 +28,7 @@ ELIBS = -lcryptopp -lconfig4cpp -lSDL2_net -lSDL2
 ifeq (1, $(DEBUG))
     override CFLAGS+= -DDEBUG -g3
 else
-	override OPT_FLAGS+= -O2
+	override OPT_FLAGS+= -O3 -s
 endif
 
 #ifneq (1, $(RELEASE))
@@ -110,6 +110,9 @@ ifneq (, $(findstring mingw, $(PLATFORM)))
 	override EXTRA_LIBS+= -lz -lzstd -lws2_32 -lpthread
 
     override EXE_SUFFIX= .exe
+
+	WRC=windres
+	WROBJ = $(OBJDIR)/resource.o
 endif
 
 ################################################################################
@@ -143,9 +146,13 @@ $(OBJS): $(OBJDIR)%.o: $(SRCDIR)%.cpp
 	@echo "Compiling $< ..."
 	@$(CXX) $(CFLAGS) -c -o $@ $<
 
-$(TARGETBIN): $(OBJS)
+$(TARGETBIN): $(OBJS) $(WROBJ)
 	@echo "Linking $@ ..."
-	@$(CXX) $(CFLAGS) $(OBJS) $(LFLAGS) $(OPT_FLAGS) -o $@
+	@$(CXX) $(CFLAGS) $(OBJS) $(WROBJ) $(LFLAGS) $(OPT_FLAGS) -o $@
+
+$(WROBJ): res/resource.rc
+	@echo "Building windows resource ..."
+	@$(WRC) -i $< -Ires -o $@
 
 install: $(TARGETBIN)
 	@echo "Installing $< ..."

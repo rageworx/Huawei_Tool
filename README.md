@@ -4,6 +4,9 @@
 
 ### Descriptions
 
+* This repository is a different one from original.
+* Basically designed to works for Huawei 3G/LTE routers.
+
 ### Original Descriptions:
 
 * (German) https://www.lteforum.at/mobilfunk/huawei-band-tool.7970
@@ -30,6 +33,7 @@
     - crypto++ (use pacman for download)
     - config4cpp (included)
     - sdl2_net (use pacman for download)
+* an utiliy: unzip to extract downloaded zip.
 
 ### Tip: MinGW-W64 required packages with MSYS2
 
@@ -37,6 +41,7 @@
 * crypto++ : pacman -S mingw-w64-x86_64-crypto++
 * config4cpp : included in src directory.
 * curl : use download_curl.sh in src directory.
+* sdl2 : pacman -S mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_net
 
 ### First to do:
 * It is need to download libcurl and depended libraries for build static.

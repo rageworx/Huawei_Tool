@@ -209,7 +209,7 @@ int main(int argc, char **argv)
              " --disconnect\n"
              " --reboot\n"
              " --windows-exit-instantly\n"
-             "\nVersion: " VERSION " \"" CODENAME "\" (Built on: " __DATE__ " " __TIME__ ")\n"
+             "\nVersion: " VERSION VERSION_TAG " \"" CODENAME "\" (Built on: " __DATE__ " " __TIME__ ")\n"
              "GitHub.0: https://github.com/0xAA/Huawei_Tool\n"
              "GitHub.1: https://github.com/rageworx/Huawei_Tool\n\n"
              "Copyright.0: unknown @ lteforum.at <unknown.lteforum@gmail.com>\n\n"

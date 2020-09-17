@@ -22,5 +22,6 @@
 #define TOOLNAME "Huawei Band Tool"
 #define CODENAME "M-I-A-CAT"
 #define VERSION APP_VERSION_STR
+#define VERSION_TAG "a"
 
 #endif /// of __VERSION_H__
